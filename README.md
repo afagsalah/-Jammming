@@ -122,7 +122,22 @@ Install the required dependencies:
 
 ```bash
 npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+## Running the Tests
+
+Run the automated tests with:
+
+```bash
+npm test
+```
+
 ## Author
 
 **Afag Mohamed**
-```
