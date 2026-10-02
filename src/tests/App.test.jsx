@@ -788,4 +788,4 @@ describe("Jammming App", () => {
     ).not.toBeInTheDocument();
   });
 
-});q
+});
