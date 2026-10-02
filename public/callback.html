@@ -1,0 +1,25 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Audius Login</title>
+  </head>
+
+  <body>
+    <p>Completing Audius login...</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/@audius/sdk@latest/dist/sdk.min.js"></script>
+
+    <script>
+      const audius = window.audiusSdk({
+        appName: "Jammming",
+        apiKey: "064d4d8907d82d99c40e1e7f621cd7ed41fe157e",
+      });
+
+      audius.oauth.handleRedirect().catch((error) => {
+        console.error("Audius callback failed:", error);
+      });
+    </script>
+  </body>
+</html>
