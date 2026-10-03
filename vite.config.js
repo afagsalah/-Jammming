@@ -1,14 +1,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
 
-  base: "/-Jammming/",
+  base: command === "build" ? "/-Jammming/" : "/",
 
   test: {
     environment: "jsdom",
     setupFiles: "./src/testSetup.js",
     globals: true,
   },
-});
+}));

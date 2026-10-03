@@ -25,7 +25,7 @@ function App() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [savedPlaylistName, setSavedPlaylistName] = useState("");
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
-
+  const [isSaving, setIsSaving] = useState(false);
   // --------------------------------
   // RESTORE EXISTING AUDIUS LOGIN
   // --------------------------------
@@ -54,7 +54,7 @@ function App() {
   // SEARCH AUDIUS
   // --------------------------------
 
-  async function search(term) {
+  /*async function search(term) {
     try {
       const response = await audius.tracks.searchTracks({
         query: term,
@@ -67,6 +67,29 @@ function App() {
         artist: track.user.name,
         album: track.albumName || "Single",
       }));
+
+      setSearchResults(tracks);
+    } catch (error) {
+      console.error("Audius search failed:", error);
+    }
+  }*/
+  async function search(term) {
+    try {
+      const response = await audius.tracks.searchTracks({
+        query: term,
+        limit: 10,
+      });
+
+      console.log("AUDIUS RESPONSE:", response);
+
+      const tracks = response.data.map((track) => ({
+        id: track.id,
+        name: track.title,
+        artist: track.user.name,
+        album: track.albumName || "Single",
+      }));
+
+      console.log("TRACKS:", tracks);
 
       setSearchResults(tracks);
     } catch (error) {
@@ -157,7 +180,7 @@ function App() {
   // SAVE PLAYLIST TO AUDIUS
   // --------------------------------
 
-  async function savePlaylist() {
+  /*async function savePlaylist() {
     // User must login first
     if (!user) {
       alert("Please login to Audius first.");
@@ -229,14 +252,86 @@ function App() {
 
       alert("Could not save playlist.");
     }
+  }*/
+  async function savePlaylist() {
+    if (!user) {
+      alert("Please login to Audius first.");
+      return;
+    }
+
+    if (playlistTracks.length === 0) {
+      alert("Your playlist is empty.");
+      return;
+    }
+
+    // Prevent clicking Save multiple times
+    if (isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const playlistContents = playlistTracks.map((track) => ({
+        trackId: track.id,
+        timestamp: Math.round(Date.now() / 1000),
+      }));
+
+      await audius.playlists.createPlaylist({
+        userId: user.id,
+        metadata: {
+          playlistName: playlistName,
+          playlistContents: playlistContents,
+        },
+      });
+
+      console.log("Playlist saved successfully");
+
+      // Remember saved playlist name
+      setSavedPlaylistName(playlistName);
+
+      // Clear the application
+      setTerm("");
+      setSearchResults([]);
+      setPlaylistTracks([]);
+      setPlaylistName("My Playlist");
+
+      // Show success message
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error("SAVE PLAYLIST ERROR:", error);
+
+      alert("Could not save playlist.");
+    } finally {
+      // Always remove loading screen
+      setIsSaving(false);
+    }
   }
 
   // --------------------------------
-  // JSX
+  const filteredSearchResults = searchResults.filter(
+    (searchTrack) =>
+      !playlistTracks.some(
+        (playlistTrack) => playlistTrack.id === searchTrack.id,
+      ),
+  );
   // --------------------------------
 
   return (
     <div className="app">
+      {isSaving && (
+        <div className="loading-overlay">
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <h2>Saving Playlist...</h2>
+            <p>Please wait while your playlist is saved to Audius.</p>
+          </div>
+        </div>
+      )}
       {showLoginSuccess && (
         <div className="success-popup">
           <div className="success-icon">✓</div>
@@ -254,7 +349,8 @@ function App() {
             ×
           </button>
         </div>
-      )}npm install --save-dev vitest jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event
+      )}
+
       <div className="user-status">
         {user ? (
           <>
@@ -267,7 +363,6 @@ function App() {
         )}
       </div>
       {/* SUCCESS POPUP */}
-
       {showSuccess && (
         <div className="success-popup">
           <div className="success-icon">✓</div>
@@ -286,9 +381,7 @@ function App() {
           </button>
         </div>
       )}
-
       {/* HEADER */}
-
       <header className="header">
         <h1>
           JAM<span>MMING</span>
@@ -296,17 +389,13 @@ function App() {
 
         <p>Build your perfect playlist</p>
       </header>
-
       {/* SEARCH BAR */}
-
       <SearchBar onSearch={search} term={term} setTerm={setTerm} />
-
       {/* MAIN CONTENT */}
-
       <main className="music-container">
         {/* SEARCH RESULTS */}
 
-        <SearchResults searchResults={searchResults} onAdd={addTrack} />
+        <SearchResults searchResults={filteredSearchResults} onAdd={addTrack} />
 
         {/* PLAYLIST */}
 

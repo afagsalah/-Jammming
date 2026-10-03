@@ -1,7 +1,10 @@
-const redirectUri =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5173/callback.html"
-    : "https://afagsalah.github.io/-Jammming/callback.html";
+const isLocal =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+const redirectUri = isLocal
+  ? "http://localhost:5173/callback.html"
+  : "https://afagsalah.github.io/-Jammming/callback.html";
 
 const audius = window.audiusSdk({
   appName: "Jammming",
